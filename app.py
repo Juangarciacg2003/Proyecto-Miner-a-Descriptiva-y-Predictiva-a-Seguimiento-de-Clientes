@@ -101,32 +101,39 @@ elif seccion == "👥 Segmentos RFM":
     st.divider()
     col_a, col_b = st.columns(2)
 
-    with col_a:
-        conteo = rfm['Segmento'].value_counts().reset_index()
-        fig = px.bar(conteo, x='Segmento', y='count',
-                     title='Clientes por segmento',
-                     color='Segmento', text='count')
-        fig.update_traces(textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
+   with col_a:
+    # Diccionario de colores fijo por segmento
+    colores = {
+        'Campeones':   '#2ecc71',
+        'Leales':      '#3498db',
+        'En riesgo':   '#e74c3c',
+        'Perdidos':    '#95a5a6',
+        'Potenciales': '#f39c12',
+        'Nuevos':      '#9b59b6'
+    }
 
-    with col_b:
-        ingreso = rfm.groupby('Segmento')['Monetary'].sum().reset_index()
-        fig = px.pie(ingreso, names='Segmento', values='Monetary',
-                     title='Ingreso total por segmento')
-        st.plotly_chart(fig, use_container_width=True)
+    conteo = rfm['Segmento'].value_counts().reset_index()
+    fig = px.bar(conteo, x='Segmento', y='count',
+                 title='Clientes por segmento',
+                 color='Segmento',
+                 color_discrete_map=colores,  # ← colores fijos
+                 text='count')
+    fig.update_traces(textposition='outside')
+    st.plotly_chart(fig, use_container_width=True)
 
-    # Scatter RFM
-    fig = px.scatter(df_seg, x='Recency', y='Frequency',
-                      size='Monetary', color='Segmento',
-                      hover_data=['CustomerID', 'Monetary'],
-                      title='Recency vs Frequency (tamaño = Monetary)')
+with col_b:
+    ingreso = rfm.groupby('Segmento')['Monetary'].sum().reset_index()
+    fig = px.pie(ingreso, names='Segmento', values='Monetary',
+                 title='Ingreso total por segmento',
+                 color='Segmento',
+                 color_discrete_map=colores)  # ← mismos colores
     st.plotly_chart(fig, use_container_width=True)
 
     # Tabla de clientes
     st.subheader(f"Clientes — {seg_sel}")
     st.dataframe(
         df_seg[['CustomerID','Recency','Frequency',
-                'Monetary','RFM_score','Segmento']]
+                'Monetary','RFM_Total','Segmento']]
         .sort_values('Monetary', ascending=False),
         use_container_width=True, hide_index=True
     )
