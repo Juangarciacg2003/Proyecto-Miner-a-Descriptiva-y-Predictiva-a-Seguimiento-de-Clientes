@@ -13,9 +13,19 @@ st.set_page_config(
 # ── Cargar datos ───────────────────────────────────────────────────
 @st.cache_data
 def cargar_datos():
-    return pd.read_csv('rfm_clientes.csv')
+    return pd.read_csv('data/rfm_clientes.csv')
 
 rfm = cargar_datos()
+
+# ── Colores fijos por segmento ─────────────────────────────────────
+colores = {
+    'Campeones':   '#2ecc71',
+    'Leales':      '#3498db',
+    'En riesgo':   '#e74c3c',
+    'Perdidos':    '#95a5a6',
+    'Potenciales': '#f39c12',
+    'Nuevos':      '#9b59b6'
+}
 
 # ── Sidebar ────────────────────────────────────────────────────────
 st.sidebar.image(
@@ -39,30 +49,30 @@ seccion = st.sidebar.radio(
 # ══════════════════════════════════════════════════════════════════
 if seccion == "📊 Resumen General":
     st.title("📊 Resumen General")
-    st.markdown("Vista general del comportamiento de clientes — Online Retail ")
+    st.markdown("Vista general del comportamiento de clientes — Online Retail 2010-2011")
 
     # KPIs
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total clientes",    f"{len(rfm):,}")
-    col2.metric("Ingreso total",     f"£{rfm['Monetary'].sum():,.0f}")
-    col3.metric("Churn rate",        f"{rfm['Churn'].mean():.1%}")
-    col4.metric("Recency promedio",  f"{rfm['Recency'].mean():.0f} días")
+    col1.metric("Total clientes",   f"{len(rfm):,}")
+    col2.metric("Ingreso total",    f"£{rfm['Monetary'].sum():,.0f}")
+    col3.metric("Churn rate",       f"{rfm['Churn'].mean():.1%}")
+    col4.metric("Recency promedio", f"{rfm['Recency'].mean():.0f} días")
 
     st.divider()
 
     # Gráficos lado a lado
     col_a, col_b = st.columns(2)
 
-     with col_a:
+    with col_a:
         fig = px.histogram(rfm, x='Recency', nbins=50,
-                            title='Distribución de Recency (días)',
-                            color_discrete_sequence=['#7F77DD'])
+                           title='Distribución de Recency (días)',
+                           color_discrete_sequence=['#7F77DD'])
         st.plotly_chart(fig, use_container_width=True)
 
-     with col_b:
+    with col_b:
         fig = px.histogram(rfm, x='Frequency', nbins=50,
-                            title='Distribución de Frequency (compras)',
-                            color_discrete_sequence=['#5DCAA5'])
+                           title='Distribución de Frequency (compras)',
+                           color_discrete_sequence=['#5DCAA5'])
         st.plotly_chart(fig, use_container_width=True)
 
     # Tabla resumen por segmento
@@ -74,7 +84,7 @@ if seccion == "📊 Resumen General":
         Monetary  = ('Monetary',   'mean'),
         Churn     = ('Churn',      'mean')
     ).round(1).reset_index()
-    resumen['Churn'] = resumen['Churn'].apply(lambda x: f"{x:.0%}")
+    resumen['Churn']    = resumen['Churn'].apply(lambda x: f"{x:.0%}")
     resumen['Monetary'] = resumen['Monetary'].apply(lambda x: f"£{x:,.0f}")
     st.dataframe(resumen, use_container_width=True, hide_index=True)
 
@@ -88,9 +98,8 @@ elif seccion == "👥 Segmentos RFM":
 
     # Filtro por segmento
     segmentos = ['Todos'] + sorted(rfm['Segmento'].unique().tolist())
-    seg_sel = st.selectbox("Filtrar por segmento:", segmentos)
-
-    df_seg = rfm if seg_sel == 'Todos' else rfm[rfm['Segmento'] == seg_sel]
+    seg_sel   = st.selectbox("Filtrar por segmento:", segmentos)
+    df_seg    = rfm if seg_sel == 'Todos' else rfm[rfm['Segmento'] == seg_sel]
 
     # KPIs del segmento
     col1, col2, col3 = st.columns(3)
@@ -102,38 +111,36 @@ elif seccion == "👥 Segmentos RFM":
     col_a, col_b = st.columns(2)
 
     with col_a:
-    # Diccionario de colores fijo por segmento
-    colores = {
-        'Campeones':   '#2ecc71',
-        'Leales':      '#3498db',
-        'En riesgo':   '#e74c3c',
-        'Perdidos':    '#95a5a6',
-        'Potenciales': '#f39c12',
-        'Nuevos':      '#9b59b6'
-    }
-
-    conteo = rfm['Segmento'].value_counts().reset_index()
-    fig = px.bar(conteo, x='Segmento', y='count',
-                 title='Clientes por segmento',
-                 color='Segmento',
-                 color_discrete_map=colores,  # ← colores fijos
-                 text='count')
-    fig.update_traces(textposition='outside')
-    st.plotly_chart(fig, use_container_width=True)
+        conteo = rfm['Segmento'].value_counts().reset_index()
+        fig = px.bar(conteo, x='Segmento', y='count',
+                     title='Clientes por segmento',
+                     color='Segmento',
+                     color_discrete_map=colores,
+                     text='count')
+        fig.update_traces(textposition='outside')
+        st.plotly_chart(fig, use_container_width=True)
 
     with col_b:
-    ingreso = rfm.groupby('Segmento')['Monetary'].sum().reset_index()
-    fig = px.pie(ingreso, names='Segmento', values='Monetary',
-                 title='Ingreso total por segmento',
-                 color='Segmento',
-                 color_discrete_map=colores)  # ← mismos colores
+        ingreso = rfm.groupby('Segmento')['Monetary'].sum().reset_index()
+        fig = px.pie(ingreso, names='Segmento', values='Monetary',
+                     title='Ingreso total por segmento',
+                     color='Segmento',
+                     color_discrete_map=colores)
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Scatter RFM
+    fig = px.scatter(df_seg, x='Recency', y='Frequency',
+                     size='Monetary', color='Segmento',
+                     color_discrete_map=colores,
+                     hover_data=['CustomerID', 'Monetary'],
+                     title='Recency vs Frequency (tamaño = Monetary)')
     st.plotly_chart(fig, use_container_width=True)
 
     # Tabla de clientes
     st.subheader(f"Clientes — {seg_sel}")
     st.dataframe(
-        df_seg[['CustomerID','Recency','Frequency',
-                'Monetary','RFM_Total','Segmento']]
+        df_seg[['CustomerID', 'Recency', 'Frequency',
+                'Monetary', 'RFM_Total', 'Segmento']]
         .sort_values('Monetary', ascending=False),
         use_container_width=True, hide_index=True
     )
@@ -159,8 +166,8 @@ elif seccion == "🔵 Clusters":
         st.plotly_chart(fig, use_container_width=True)
 
     with col_b:
-        perfil = rfm.groupby('Cluster_nombre')[
-            ['Recency','Frequency','Monetary']].mean().round(1).reset_index()
+        perfil = (rfm.groupby('Cluster_nombre')[['Recency','Frequency','Monetary']]
+                  .mean().round(1).reset_index())
         fig = px.bar(perfil, x='Cluster_nombre', y='Monetary',
                      title='Ingreso promedio por cluster',
                      color='Cluster_nombre',
@@ -169,9 +176,9 @@ elif seccion == "🔵 Clusters":
         st.plotly_chart(fig, use_container_width=True)
 
     fig = px.scatter(rfm, x='Recency', y='Frequency',
-                      color='Cluster_nombre', size='Monetary',
-                      hover_data=['CustomerID','Monetary'],
-                      title='Clusters — Recency vs Frequency')
+                     color='Cluster_nombre', size='Monetary',
+                     hover_data=['CustomerID', 'Monetary'],
+                     title='Clusters — Recency vs Frequency')
     st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Perfil detallado por cluster")
@@ -198,8 +205,8 @@ elif seccion == "⚠️ Riesgo de Churn":
 
     df_riesgo = (rfm[(rfm['Churn'] == 0) &
                      (rfm['Churn_prob'] >= umbral)]
-                 [['CustomerID','Recency','Frequency',
-                   'Monetary','Cluster_nombre','Churn_prob']]
+                 [['CustomerID', 'Recency', 'Frequency',
+                   'Monetary', 'Cluster_nombre', 'Churn_prob']]
                  .sort_values('Churn_prob', ascending=False))
 
     st.markdown(f"**{len(df_riesgo):,} clientes activos** con probabilidad de churn ≥ {umbral:.0%}")
@@ -208,12 +215,13 @@ elif seccion == "⚠️ Riesgo de Churn":
     # Churn por segmento
     churn_seg = rfm.groupby('Segmento')['Churn'].mean().reset_index()
     churn_seg.columns = ['Segmento', 'Churn_rate']
-    fig = px.bar(churn_seg.sort_values('Churn_rate', ascending=False),
+    churn_seg_sorted = churn_seg.sort_values('Churn_rate', ascending=False)
+    fig = px.bar(churn_seg_sorted,
                  x='Segmento', y='Churn_rate',
                  title='Tasa de Churn por segmento RFM',
                  color='Segmento',
-                 text=churn_seg.sort_values('Churn_rate', ascending=False)
-                 ['Churn_rate'].apply(lambda x: f"{x:.0%}"))
+                 color_discrete_map=colores,
+                 text=churn_seg_sorted['Churn_rate'].apply(lambda x: f"{x:.0%}"))
     fig.update_traces(textposition='outside')
     fig.update_yaxes(tickformat='.0%')
     st.plotly_chart(fig, use_container_width=True)
