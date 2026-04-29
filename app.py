@@ -13,7 +13,7 @@ st.set_page_config(
 # ── Cargar datos ───────────────────────────────────────────────────
 @st.cache_data
 def cargar_datos():
-    return pd.read_csv('data/rfm_clientes.csv')
+    return pd.read_csv('rfm_clientes.csv')
 
 rfm = cargar_datos()
 
