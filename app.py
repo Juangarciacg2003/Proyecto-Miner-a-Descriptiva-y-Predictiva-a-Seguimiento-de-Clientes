@@ -39,7 +39,7 @@ seccion = st.sidebar.radio(
 # ══════════════════════════════════════════════════════════════════
 if seccion == "📊 Resumen General":
     st.title("📊 Resumen General")
-    st.markdown("Vista general del comportamiento de clientes — Online Retail 2010-2011")
+    st.markdown("Vista general del comportamiento de clientes — Online Retail ")
 
     # KPIs
     col1, col2, col3, col4 = st.columns(4)
@@ -83,6 +83,8 @@ if seccion == "📊 Resumen General":
 # ══════════════════════════════════════════════════════════════════
 elif seccion == "👥 Segmentos RFM":
     st.title("👥 Segmentos RFM")
+    st.info("📌 Segmentación basada en reglas de negocio RFM definidas manualmente. "
+            "Puede diferir del Cluster K-Means porque usan lógicas distintas.")
 
     # Filtro por segmento
     segmentos = ['Todos'] + sorted(rfm['Segmento'].unique().tolist())
@@ -134,6 +136,10 @@ elif seccion == "👥 Segmentos RFM":
 # ══════════════════════════════════════════════════════════════════
 elif seccion == "🔵 Clusters":
     st.title("🔵 Clusters K-Means")
+    st.info("📌 Segmentación basada en similitud matemática entre clientes. "
+            "El algoritmo agrupa por Recency, Frequency y Monetary en conjunto, "
+            "por eso un cliente puede ser 'Perdido' en RFM pero 'VIP' en K-Means "
+            "si su Frequency o Monetary son muy altos.")
 
     col_a, col_b = st.columns(2)
 
