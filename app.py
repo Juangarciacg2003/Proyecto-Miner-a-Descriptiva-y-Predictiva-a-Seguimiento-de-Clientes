@@ -53,13 +53,13 @@ if seccion == "📊 Resumen General":
     # Gráficos lado a lado
     col_a, col_b = st.columns(2)
 
-    with col_a:
+     with col_a:
         fig = px.histogram(rfm, x='Recency', nbins=50,
                             title='Distribución de Recency (días)',
                             color_discrete_sequence=['#7F77DD'])
         st.plotly_chart(fig, use_container_width=True)
 
-    with col_b:
+     with col_b:
         fig = px.histogram(rfm, x='Frequency', nbins=50,
                             title='Distribución de Frequency (compras)',
                             color_discrete_sequence=['#5DCAA5'])
@@ -101,7 +101,7 @@ elif seccion == "👥 Segmentos RFM":
     st.divider()
     col_a, col_b = st.columns(2)
 
-   with col_a:
+    with col_a:
     # Diccionario de colores fijo por segmento
     colores = {
         'Campeones':   '#2ecc71',
@@ -121,7 +121,7 @@ elif seccion == "👥 Segmentos RFM":
     fig.update_traces(textposition='outside')
     st.plotly_chart(fig, use_container_width=True)
 
-with col_b:
+    with col_b:
     ingreso = rfm.groupby('Segmento')['Monetary'].sum().reset_index()
     fig = px.pie(ingreso, names='Segmento', values='Monetary',
                  title='Ingreso total por segmento',
