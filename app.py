@@ -49,7 +49,7 @@ seccion = st.sidebar.radio(
 # ══════════════════════════════════════════════════════════════════
 if seccion == "📊 Resumen General":
     st.title("📊 Resumen General")
-    st.markdown("Vista general del comportamiento de clientes — Online Retail 2010-2011")
+    st.markdown("Vista general del comportamiento de clientes — Online Retail")
 
     # KPIs
     col1, col2, col3, col4 = st.columns(4)
